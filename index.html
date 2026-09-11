@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Share Your Photos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ivory: #FBF7F1;
+    --charcoal: #2E2A26;
+    --sage: #5B6E52;
+    --rose: #C98B90;
+    --gold: #B08D57;
+    --card-bg: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--ivory);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(91,110,82,0.06) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(201,139,144,0.08) 0%, transparent 45%);
+    font-family: 'Jost', sans-serif;
+    color: var(--charcoal);
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-bg);
+    border: 1px solid rgba(46,42,38,0.08);
+    border-radius: 2px;
+    padding: 48px 36px 40px;
+    box-shadow: 0 30px 60px -30px rgba(46,42,38,0.25);
+  }
+
+  .monogram {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--charcoal);
+    margin: 0;
+  }
+
+  .monogram em {
+    font-style: italic;
+    color: var(--rose);
+    padding: 0 6px;
+  }
+
+  .date-line {
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--sage);
+    margin: 6px 0 22px;
+  }
+
+  .divider {
+    display: block;
+    margin: 0 auto 26px;
+    width: 120px;
+    height: 14px;
+    opacity: 0.8;
+  }
+
+  .invite-text {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #514c46;
+    margin: 0 0 30px;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: var(--charcoal);
+    margin-bottom: 8px;
+  }
+
+  .field input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    border: 1px solid rgba(46,42,38,0.2);
+    border-radius: 2px;
+    background: var(--ivory);
+    color: var(--charcoal);
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .field input[type="text"]:focus {
+    border-color: var(--sage);
+  }
+
+  .dropzone {
+    border: 1.5px dashed rgba(91,110,82,0.45);
+    border-radius: 3px;
+    padding: 34px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    background: rgba(91,110,82,0.03);
+  }
+
+  .dropzone.dragover {
+    background: rgba(201,139,144,0.08);
+    border-color: var(--rose);
+  }
+
+  .dropzone svg {
+    width: 30px;
+    height: 30px;
+    stroke: var(--sage);
+    margin-bottom: 10px;
+  }
+
+  .dropzone p {
+    margin: 0;
+    font-size: 14px;
+    color: #6b655e;
+  }
+
+  .dropzone .sub {
+    font-size: 12px;
+    color: #9c948a;
+    margin-top: 4px;
+  }
+
+  input[type="file"] { display: none; }
+
+  .thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .thumbs img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(46,42,38,0.1);
+  }
+
+  .submit-btn {
+    width: 100%;
+    margin-top: 26px;
+    padding: 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.03em;
+    background: var(--sage);
+    color: var(--ivory);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+  }
+
+  .submit-btn:hover { background: #4a5a43; }
+  .submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .status {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 16px;
+    min-height: 18px;
+    color: var(--sage);
+  }
+
+  .status.error { color: #a3564f; }
+
+  .success-view {
+    display: none;
+    text-align: center;
+    padding: 20px 0 10px;
+  }
+
+  .success-view svg {
+    width: 44px;
+    height: 44px;
+    stroke: var(--sage);
+    margin-bottom: 14px;
+  }
+
+  .success-view h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 26px;
+    margin: 0 0 8px;
+  }
+
+  .success-view p {
+    font-size: 14px;
+    color: #6b655e;
+    margin: 0 0 22px;
+  }
+
+  .again-link {
+    font-size: 13px;
+    color: var(--sage);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'Jost', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- EDIT: swap in your initials -->
+  <p class="monogram">A<em>&amp;</em>B</p>
+  <!-- EDIT: swap in your wedding date -->
+  <p class="date-line">SEPTEMBER 20, 2026</p>
+
+  <svg class="divider" viewBox="0 0 120 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="7" x2="45" y2="7" stroke="#B08D57" stroke-width="1"/>
+    <circle cx="60" cy="7" r="4" stroke="#B08D57" stroke-width="1"/>
+    <line x1="75" y1="7" x2="120" y2="7" stroke="#B08D57" stroke-width="1"/>
+  </svg>
+
+  <p class="invite-text">
+    We'd love to see our day through your eyes.<br>
+    Share your photos with us below.
+  </p>
+
+  <form id="upload-form">
+    <div class="field">
+      <label for="guestName">Your name</label>
+      <input type="text" id="guestName" placeholder="e.g. Maria Novak" required>
+    </div>
+
+    <div class="field">
+      <label>Photos</label>
+      <div class="dropzone" id="dropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
+          <path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>
+        </svg>
+        <p>Tap to choose photos, or drag them here</p>
+        <p class="sub">JPG or PNG, up to 10 at a time</p>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Send photos</button>
+    <p class="status" id="status"></p>
+  </form>
+
+  <div class="success-view" id="successView">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+    <h2>Thank you!</h2>
+    <p>Your photos have been sent.</p>
+    <button class="again-link" id="sendMoreBtn">Send more photos</button>
+  </div>
+
+</div>
+
+<script>
+  // EDIT: paste your deployed Google Apps Script Web App URL here
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyKIOFhIgke_RSk5HaP6cmdifH95NI8HFVwn5WfBxtZsGxjBpl7KO1GeMw2ZxOq3iAI/exec';
+
+  const form = document.getElementById('upload-form');
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const thumbsEl = document.getElementById('thumbs');
+  const statusEl = document.getElementById('status');
+  const submitBtn = document.getElementById('submitBtn');
+  const successView = document.getElementById('successView');
+  const sendMoreBtn = document.getElementById('sendMoreBtn');
+
+  let selectedFiles = [];
+
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+  function handleFiles(fileList) {
+    selectedFiles = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    thumbsEl.innerHTML = '';
+    selectedFiles.forEach(file => {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      thumbsEl.appendChild(img);
+    });
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (selectedFiles.length === 0) {
+      statusEl.textContent = 'Please choose at least one photo.';
+      statusEl.classList.add('error');
+      return;
+    }
+
+    if (SCRIPT_URL.includes('YOUR_APPS_SCRIPT')) {
+      statusEl.textContent = 'Upload isn\'t connected yet — set SCRIPT_URL in index.html.';
+      statusEl.classList.add('error');
+      return;
+    }
+
+    const guestName = document.getElementById('guestName').value.trim();
+    submitBtn.disabled = true;
+    statusEl.classList.remove('error');
+
+    try {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        statusEl.textContent = `Sending photo ${i + 1} of ${selectedFiles.length}…`;
+        const base64 = await fileToBase64(file);
+
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            guestName,
+            fileName: file.name,
+            mimeType: file.type,
+            fileData: base64
+          })
+        });
+      }
+
+      form.style.display = 'none';
+      successView.style.display = 'block';
+    } catch (err) {
+      statusEl.textContent = 'Something went wrong. Please try again.';
+      statusEl.classList.add('error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  sendMoreBtn.addEventListener('click', () => {
+    selectedFiles = [];
+    thumbsEl.innerHTML = '';
+    fileInput.value = '';
+    document.getElementById('guestName').value = '';
+    statusEl.textContent = '';
+    successView.style.display = 'none';
+    form.style.display = 'block';
+  });
+</script>
+
+</body>
+</html>
