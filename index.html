@@ -110,6 +110,12 @@
     border-color: var(--sage);
   }
 
+  .field .hint {
+    font-size: 12px;
+    color: #9c948a;
+    margin-top: 6px;
+  }
+
   .dropzone {
     border: 1.5px dashed rgba(91,110,82,0.45);
     border-radius: 3px;
@@ -253,6 +259,12 @@
     </div>
 
     <div class="field">
+      <label for="accessCode">Access code</label>
+      <input type="text" id="accessCode" placeholder="Enter the code from your invitation" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+      <p class="hint">Only guests with the code can upload.</p>
+    </div>
+
+    <div class="field">
       <label>Photos</label>
       <div class="dropzone" id="dropzone">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -348,6 +360,14 @@
     }
 
     const guestName = document.getElementById('guestName').value.trim();
+    const accessCode = document.getElementById('accessCode').value.trim();
+
+    if (!accessCode) {
+      statusEl.textContent = 'Please enter the access code.';
+      statusEl.classList.add('error');
+      return;
+    }
+
     submitBtn.disabled = true;
     statusEl.classList.remove('error');
 
@@ -357,22 +377,40 @@
         statusEl.textContent = `Sending photo ${i + 1} of ${selectedFiles.length}…`;
         const base64 = await fileToBase64(file);
 
-        await fetch(SCRIPT_URL, {
+        const res = await fetch(SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
+            accessCode,
             guestName,
             fileName: file.name,
             mimeType: file.type,
             fileData: base64
           })
         });
+
+        // The code is verified on the server; read its answer.
+        let result = null;
+        try { result = await res.json(); } catch (_) {}
+
+        if (result && result.ok === false) {
+          const err = new Error(result.error || 'failed');
+          err.code = result.error;
+          throw err;
+        }
+        if (!result) {
+          throw new Error('no-response');
+        }
       }
 
       form.style.display = 'none';
       successView.style.display = 'block';
     } catch (err) {
-      statusEl.textContent = 'Something went wrong. Please try again.';
+      if (err.code === 'invalid_code') {
+        statusEl.textContent = 'That code isn\'t right. Please check your invitation and try again.';
+      } else {
+        statusEl.textContent = 'Something went wrong. Please try again.';
+      }
       statusEl.classList.add('error');
     } finally {
       submitBtn.disabled = false;
@@ -384,6 +422,7 @@
     thumbsEl.innerHTML = '';
     fileInput.value = '';
     document.getElementById('guestName').value = '';
+    document.getElementById('accessCode').value = '';
     statusEl.textContent = '';
     successView.style.display = 'none';
     form.style.display = 'block';
